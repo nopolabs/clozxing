@@ -41,5 +41,5 @@
   (testing "Hi Mom! (with logo)"
     (with-temp ".png"
       (fn [tmp]
-        (to-file "Hi Mom!" {:size 300 :logo "dev-resources/sqsp-border-60.png" :logo-size 200} tmp "png")
+        (to-file "Hi Mom!" {:size 300 :logo "dev-resources/logo.png" :logo-size 200} tmp "png")
         (is (= "Hi Mom!" (apply str (from-file tmp))))))))

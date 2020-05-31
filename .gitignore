@@ -11,4 +11,4 @@ pom.xml.asc
 .hgignore
 .hg/
 .idea/
-*.png
+.DS_Store
