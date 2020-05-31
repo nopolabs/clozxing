@@ -7,15 +7,18 @@
            (java.io File)))
 
 (defn temp-file
-  []
-  (let [tmp (File/createTempFile "cloxzing" ".test")]
-    (.deleteOnExit tmp)
-    tmp))
+  ([] (temp-file ".text"))
+  ([suffix]
+   (let [tmp (File/createTempFile "cloxzing" suffix)]
+     (.deleteOnExit tmp)
+     tmp)))
 
-(defn with-temp [t]
-  (let [tmp (temp-file)]
-    (t tmp)
-    (.delete tmp)))
+(defn with-temp
+  ([test] (with-temp ".text" test))
+  ([suffix test]
+   (let [tmp (temp-file suffix)]
+     (test tmp)
+     (.delete tmp))))
 
 (deftest encode-decode
   (testing "Pure vanilla"
@@ -34,4 +37,9 @@
     (with-temp
       (fn [tmp]
         (to-file "Hi Mom!" tmp)
+        (is (= "Hi Mom!" (apply str (from-file tmp)))))))
+  (testing "Hi Mom! (with logo)"
+    (with-temp ".png"
+      (fn [tmp]
+        (to-file "Hi Mom!" {:size 300 :logo "dev-resources/sqsp-border-60.png" :logo-size 200} tmp "png")
         (is (= "Hi Mom!" (apply str (from-file tmp))))))))

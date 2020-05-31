@@ -100,10 +100,17 @@
     (ImageIO/write ^BufferedImage image ^String format stream)
     stream))
 
+(defn- valid-format
+  [format]
+  (if (contains? (set (ImageIO/getWriterFormatNames)) format)
+    format
+    (throw (new IllegalArgumentException
+                (str format " is not a valid format.")))))
+
 (defn- write-image-to-file
   [image file format]
   (let [file (if (instance? File file) file (new File file))
-        format (or format default-format)
+        format (or (valid-format format) default-format)
         stream (new FileOutputStream file)]
     (ImageIO/write ^BufferedImage image ^String format stream)))
 
@@ -124,10 +131,11 @@
            overlay-image (resize-image (read-image logo) logo-size)
            image (overlay base-image overlay-image)
            decoded (cloxzing.decode/from-image image)]
-       (if (nil? decoded)
-         image
+       (if (empty? decoded)
          ; if we can't recover text from qrcode then retry with a smaller logo
-         (qrcode-image text size hints logo (- logo-size 10)))))))
+         (qrcode-image text size hints logo (- logo-size 10))
+         ; we found a logo size that works
+         image)))))
 
 (defn qrcode
   [text {:keys [size hints logo logo-size]}]
