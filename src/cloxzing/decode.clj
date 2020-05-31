@@ -6,7 +6,8 @@
            (com.google.zxing.multi GenericMultipleBarcodeReader)
            (com.google.zxing.client.j2se BufferedImageLuminanceSource)
            (com.google.zxing.common GlobalHistogramBinarizer HybridBinarizer)
-           (java.awt.image BufferedImage)))
+           (java.awt.image BufferedImage)
+           (java.net URL)))
 
 (def hints
   (new EnumMap {DecodeHintType/TRY_HARDER       true
@@ -50,13 +51,12 @@
         results (if (nil? results) (pure-barcode bitmap) results)
         results (if (nil? results) (photo-barcode bitmap) results)
         results (if (nil? results) (hybrid-barcode source) results)]
-    (println results)
     (map #(.getText %) results)))
 
 (defn from-file
   [file]
   (if (instance? File file)
-    (from-file (new FileInputStream file))
+    (from-stream (new FileInputStream file))
     (from-file (new File file))))
 
 (defn from-bytes
@@ -68,3 +68,7 @@
   (let [output (new ByteArrayOutputStream)]
     (ImageIO/write ^BufferedImage image "PNG" output)
     (from-bytes (.toByteArray output))))
+
+(defn from-url
+  [^URL url]
+  (from-stream (.openStream url)))

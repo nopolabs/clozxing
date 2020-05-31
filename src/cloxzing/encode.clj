@@ -102,8 +102,9 @@
 
 (defn- write-image-to-file
   [image file format]
-  (let [format (or format default-format)
-        stream (new FileOutputStream (new File file))]
+  (let [file (if (instance? File file) file (new File file))
+        format (or format default-format)
+        stream (new FileOutputStream file)]
     (ImageIO/write ^BufferedImage image ^String format stream)))
 
 (defn- resize-image
