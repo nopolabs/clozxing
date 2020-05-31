@@ -20,14 +20,14 @@
 (defn- multiple-barcodes [bitmap]
   (try
     (let [multi-reader (new GenericMultipleBarcodeReader (new MultiFormatReader))]
-      (seq (.decodeMultiple multi-reader bitmap hints)))
+      (.decodeMultiple multi-reader bitmap hints))
     (catch Exception _
       nil)))
 
 (defn- decode [bitmap hints]
   (try
     (let [reader (new MultiFormatReader)]
-      (seq (.decode reader bitmap hints)))
+      (.decode reader bitmap hints))
     (catch Exception _
       nil)))
 
@@ -50,6 +50,7 @@
         results (if (nil? results) (pure-barcode bitmap) results)
         results (if (nil? results) (photo-barcode bitmap) results)
         results (if (nil? results) (hybrid-barcode source) results)]
+    (println results)
     (map #(.getText %) results)))
 
 (defn from-file
