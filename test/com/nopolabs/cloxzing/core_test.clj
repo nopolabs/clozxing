@@ -8,14 +8,14 @@
            (java.io File)))
 
 (defn temp-file
-  ([] (temp-file ".text"))
+  ([] (temp-file ".png"))
   ([suffix]
    (let [tmp (File/createTempFile "cloxzing" suffix)]
      (.deleteOnExit tmp)
      tmp)))
 
 (defn with-temp
-  ([test] (with-temp ".text" test))
+  ([test] (with-temp ".png" test))
   ([suffix test]
    (let [tmp (temp-file suffix)]
      (test tmp)
@@ -42,5 +42,8 @@
   (testing "Hi Mom! (with logo)"
     (with-temp ".png"
       (fn [tmp]
-        (encode/to-file "Hi Mom!" {:size 300 :logo "dev-resources/logo.png" :logo-size 200} tmp "png")
+        (encode/to-file "Hi Mom!" tmp {:size 300
+                                       :logo "dev-resources/logo.png"
+                                       :logo-size 200
+                                       :format "png"})
         (is (= "Hi Mom!" (apply str (decode/from-file tmp))))))))

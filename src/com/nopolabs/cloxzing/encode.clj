@@ -1,5 +1,6 @@
 (ns com.nopolabs.cloxzing.encode
-  (:require [com.nopolabs.cloxzing.decode :as decode])
+  (:require [com.nopolabs.cloxzing.decode :as decode]
+            [clojure.string :as str])
   (:import (com.google.zxing BarcodeFormat)
            (com.google.zxing EncodeHintType)
            (com.google.zxing.client.j2se MatrixToImageWriter)
@@ -7,7 +8,7 @@
            (com.google.zxing.qrcode QRCodeWriter)
            (java.nio.charset StandardCharsets)
            (javax.imageio ImageIO)
-           (java.io ByteArrayOutputStream FileOutputStream File InputStream)
+           (java.io FileOutputStream File InputStream OutputStream)
            (java.awt.image BufferedImage)
            (java.awt AlphaComposite Graphics2D)
            (net.coobird.thumbnailator Thumbnails)
@@ -17,18 +18,14 @@
 (def QR_CODE BarcodeFormat/QR_CODE)
 
 ; error correction L M Q H
-(def error-correction-H {EncodeHintType/ERROR_CORRECTION ErrorCorrectionLevel/H})
-(def error-correction-Q {EncodeHintType/ERROR_CORRECTION ErrorCorrectionLevel/Q})
-(def error-correction-M {EncodeHintType/ERROR_CORRECTION ErrorCorrectionLevel/M})
-(def error-correction-L {EncodeHintType/ERROR_CORRECTION ErrorCorrectionLevel/L})
+(def error-correction-H ErrorCorrectionLevel/H)
+(def error-correction-Q ErrorCorrectionLevel/Q)
+(def error-correction-M ErrorCorrectionLevel/M)
+(def error-correction-L ErrorCorrectionLevel/L)
 
 ; character set UTF-8 ISO-8859-1
-(def utf-8 {EncodeHintType/CHARACTER_SET StandardCharsets/UTF_8})
-(def iso-8859-1 {EncodeHintType/CHARACTER_SET StandardCharsets/ISO_8859_1})
-
-(def default-hints {EncodeHintType/ERROR_CORRECTION ErrorCorrectionLevel/H
-                    EncodeHintType/CHARACTER_SET    StandardCharsets/ISO_8859_1
-                    EncodeHintType/MARGIN           1})
+(def utf-8 StandardCharsets/UTF_8)
+(def iso-8859-1 StandardCharsets/ISO_8859_1)
 
 (def source-over (AlphaComposite/getInstance AlphaComposite/SRC_OVER (float 1)))
 
@@ -94,27 +91,6 @@
           (if (instance? InputStream source)
             (ImageIO/read ^InputStream source)))))))
 
-(defn- write-image-to-stream
-  [image format]
-  (let [format (or format default-format)
-        stream (new ByteArrayOutputStream)]
-    (ImageIO/write ^BufferedImage image ^String format stream)
-    stream))
-
-(defn- valid-format
-  [format]
-  (if (contains? (set (ImageIO/getWriterFormatNames)) format)
-    format
-    (throw (new IllegalArgumentException
-                (str format " is not a valid format.")))))
-
-(defn- write-image-to-file
-  [image file format]
-  (let [file (if (instance? File file) file (new File file))
-        format (or (valid-format format) default-format)
-        stream (new FileOutputStream file)]
-    (ImageIO/write ^BufferedImage image ^String format stream)))
-
 (defn- resize-image
   [image size]
   (let [thumbnails (Thumbnails/of (into-array [image]))
@@ -147,23 +123,53 @@
       max)))
 
 (defn- qrcode
-  [text {:keys [size hints logo logo-size]}]
+  [text {:keys [size logo logo-size error-correction character-set margin]}]
   (let [size (or size 300)
         logo-size (max-logo-size size logo-size)
-        hints (merge default-hints hints)]
+        hints {EncodeHintType/ERROR_CORRECTION (or error-correction error-correction-H)
+               EncodeHintType/CHARACTER_SET (or character-set iso-8859-1)
+               EncodeHintType/MARGIN (or margin 1)}]
     (if (nil? logo) (qrcode-image text size hints)
                     (qrcode-image text size hints logo logo-size))))
 
+(defn- valid-format
+  [format]
+  (if (contains? (set (ImageIO/getWriterFormatNames)) format)
+    format
+    (throw (new IllegalArgumentException
+                (str format " is not a valid format.")))))
+
+(defn- file-format
+  [file]
+  (let [name (if (instance? File file) (.getName file) file)]
+    (last (str/split name #"\."))))
+
+(defn- write-image-to-file
+  [image file { format :format }]
+  (let [file (if (instance? File file) file (new File file))
+        format (or format (file-format file))
+        format (valid-format format)
+        format (or format default-format)
+        stream (new FileOutputStream file)]
+    (ImageIO/write ^BufferedImage image ^String format stream)))
+
+(defn- write-image-to-stream
+  [image stream { format :format }]
+  (let [format (or format default-format)]
+    (ImageIO/write ^BufferedImage image ^String format ^OutputStream stream)
+    stream))
+
 (defn to-image
+  "Returns QR code as a java.awt.image.BufferedImage suitable for further processing"
   ([text] (to-image text {}))
   ([text opts] (qrcode text opts)))
 
 (defn to-stream
-  ([text] (to-stream text {} default-format))
-  ([text format] (to-stream text {} format))
-  ([text opts format] (write-image-to-stream (qrcode text opts) format)))
+  "Writes QR code to a java.io.OutputStream"
+  ([text stream] (to-stream text stream {}))
+  ([text stream opts] (write-image-to-stream (to-image text opts) stream opts)))
 
 (defn to-file
-  ([text file] (to-file text {} file default-format))
-  ([text file format] (to-file text {} file format))
-  ([text opts file format] (write-image-to-file (qrcode text opts) file format)))
+  "Writes QR code to a file (file parameter may either be String or java.io.File)"
+  ([text file] (to-file text file {}))
+  ([text file opts] (write-image-to-file (to-image text opts) file opts)))
