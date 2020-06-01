@@ -1,4 +1,5 @@
-(ns cloxzing.encode
+(ns com.nopolabs.cloxzing.encode
+  (:require [com.nopolabs.cloxzing.decode :as decode])
   (:import (com.google.zxing BarcodeFormat)
            (com.google.zxing EncodeHintType)
            (com.google.zxing.client.j2se MatrixToImageWriter)
@@ -130,7 +131,7 @@
      (let [base-image (qrcode-image text size hints)
            overlay-image (resize-image (read-image logo) logo-size)
            image (overlay base-image overlay-image)
-           decoded (cloxzing.decode/from-image image)]
+           decoded (decode/from-image image)]
        (if (empty? decoded)
          ; if we can't recover text from qrcode then retry with a smaller logo
          (qrcode-image text size hints logo (- logo-size 10))

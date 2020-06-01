@@ -1,6 +1,6 @@
-(ns cloxzing.core
-  (:require [cloxzing.decode :as decode]
-            [cloxzing.encode :as encode]))
+(ns com.nopolabs.cloxzing.core
+  (:require [com.nopolabs.cloxzing.decode :as decode]
+            [com.nopolabs.cloxzing.encode :as encode]))
 
 (defn encode-decode
   ([text]
