@@ -17,7 +17,7 @@ using the [zxing](https://github.com/zxing/zxing) library.
 
     Encodes text to a QR code and writes results to provided java.io.OutpuStream. Returns true if successful.
 
-    Default output format is PNG, format can be specified in opts, e.g.: `{ :format "JPG" }`.
+    Default output format is PNG, format can be specified in opts, e.g.: { :format "JPG" }.
 
 #### encode/to-file
 `(encode/to-file text file)` `(encode/to-file file opts)`
@@ -26,18 +26,22 @@ using the [zxing](https://github.com/zxing/zxing) library.
 
     The file parameter may either be a String or a java.io.File.
 
-    Output format is determined from file name suffix and can be overridden in opts, e.g.: `{ :format "JPG" }`.
+    Output format is determined from file name suffix and can be overridden in opts, e.g.: { :format "JPG" }.
 
 #### Example
 ```
-(encode/to-file "example" "example.png" {:size 300
-                                         :logo "dev-resources/logo.png"
-                                         :logo-size 75
-                                         :error-correction encode/error-correction-H
-                                         :character-set encode/iso-8859-1
-                                         :margin 1
-                                         :format "PNG"}))
+(encode/to-file 
+  "https://github.com/nopolabs/clozxing" 
+  "clozxing.png" 
+  { :size 200
+    :logo "dev-resources/logo.png"
+    :logo-size 67
+    :error-correction encode/error-correction-H
+    :character-set encode/iso-8859-1
+    :margin 1
+    :format "PNG" }))
 ```
+![https://github.com/nopolabs/clozxing](clozxing.png "https://github.com/nopolabs/clozxing")
 
 ### Decoding
 
@@ -70,7 +74,7 @@ using the [zxing](https://github.com/zxing/zxing) library.
 
 #### Example
 ```
-(decode/file "example.png")
+(decode/file "clozxing.png")
 ```
 
 ## License
