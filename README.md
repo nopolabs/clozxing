@@ -3,6 +3,10 @@
 A Clojure library designed to encode and decode QR codes
 using the [zxing](https://github.com/zxing/zxing) library.
 
+Available on [clojars](https://clojars.org/com.nopolabs/clozxing).
+
+`[com.nopolabs/clozxing "0.1.0"]`
+
 ## Usage
 
 ### Encoding
