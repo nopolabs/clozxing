@@ -1,4 +1,4 @@
-(ns com.nopolabs.cloxzing.decode
+(ns com.nopolabs.clozxing.decode
   (:import (javax.imageio ImageIO)
            (java.io InputStream ByteArrayInputStream ByteArrayOutputStream File FileInputStream)
            (com.google.zxing MultiFormatReader DecodeHintType BarcodeFormat BinaryBitmap)

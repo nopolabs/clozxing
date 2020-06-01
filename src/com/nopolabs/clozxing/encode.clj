@@ -1,5 +1,5 @@
-(ns com.nopolabs.cloxzing.encode
-  (:require [com.nopolabs.cloxzing.decode :as decode]
+(ns com.nopolabs.clozxing.encode
+  (:require [com.nopolabs.clozxing.decode :as decode]
             [clojure.string :as str])
   (:import (com.google.zxing BarcodeFormat)
            (com.google.zxing EncodeHintType)

@@ -1,16 +1,16 @@
-(ns com.nopolabs.cloxzing.core-test
+(ns com.nopolabs.clozxing.core-test
   (:require [clojure.test :refer :all]
             [clojure.java.io :as io]
-            [com.nopolabs.cloxzing.core :as core]
-            [com.nopolabs.cloxzing.encode :as encode]
-            [com.nopolabs.cloxzing.decode :as decode])
+            [com.nopolabs.clozxing.core :as core]
+            [com.nopolabs.clozxing.encode :as encode]
+            [com.nopolabs.clozxing.decode :as decode])
   (:import (clojure.lang LazySeq)
            (java.io File)))
 
 (defn temp-file
   ([] (temp-file ".png"))
   ([suffix]
-   (let [tmp (File/createTempFile "cloxzing" suffix)]
+   (let [tmp (File/createTempFile "clozxing" suffix)]
      (.deleteOnExit tmp)
      tmp)))
 

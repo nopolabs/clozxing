@@ -1,6 +1,6 @@
-(ns com.nopolabs.cloxzing.core
-  (:require [com.nopolabs.cloxzing.decode :as decode]
-            [com.nopolabs.cloxzing.encode :as encode]))
+(ns com.nopolabs.clozxing.core
+  (:require [com.nopolabs.clozxing.decode :as decode]
+            [com.nopolabs.clozxing.encode :as encode]))
 
 (defn encode-example [] (encode/to-file "example" "example.png" {:size 300
                                                                  :logo "dev-resources/logo.png"

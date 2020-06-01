@@ -1,4 +1,4 @@
-# cloxzing
+# clozxing
 
 A Clojure library designed to encode and decode QR codes
 using the [zxing](https://github.com/zxing/zxing) library.
