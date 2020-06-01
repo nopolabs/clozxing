@@ -8,7 +8,7 @@
            (javax.imageio ImageIO)
            (java.io ByteArrayOutputStream FileOutputStream File InputStream)
            (java.awt.image BufferedImage)
-           (java.awt AlphaComposite)
+           (java.awt AlphaComposite Graphics2D)
            (net.coobird.thumbnailator Thumbnails)
            (java.net URL)
            (javax.imageio.stream ImageInputStream)))
@@ -57,13 +57,13 @@
        (.getType base-image)))
 
 (defn- drawImage
-  [graphics ^BufferedImage image x y]
-  (.drawImage graphics image x y nil)
+  [graphics image x y]
+  (.drawImage ^Graphics2D graphics ^BufferedImage image ^int x ^int y nil)
   graphics)
 
 (defn- drawOver
-  [graphics ^BufferedImage image x y]
-  (.setComposite graphics source-over)
+  [graphics image x y]
+  (.setComposite ^Graphics2D graphics ^AlphaComposite source-over)
   (drawImage graphics image x y))
 
 (defn- overlay
@@ -137,10 +137,18 @@
          ; we found a logo size that works
          image)))))
 
-(defn qrcode
+(defn- max-logo-size
+  [size logo-size]
+  (let [max (int (/ size 3))
+        logo-size (or logo-size 75)]
+    (if (< logo-size max)
+      logo-size
+      max)))
+
+(defn- qrcode
   [text {:keys [size hints logo logo-size]}]
   (let [size (or size 300)
-        logo-size (or logo-size 75)
+        logo-size (max-logo-size size logo-size)
         hints (merge default-hints hints)]
     (if (nil? logo) (qrcode-image text size hints)
                     (qrcode-image text size hints logo logo-size))))
