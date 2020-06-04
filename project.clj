@@ -1,4 +1,4 @@
-(defproject com.nopolabs/clozxing "0.1.0"
+(defproject com.nopolabs/clozxing "0.1.1"
   :description "Encode and decode QR codes using zxing library"
   :url "http://github.com/nopolabs/clozxing"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"

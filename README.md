@@ -5,7 +5,7 @@ using the [zxing](https://github.com/zxing/zxing) library.
 
 Available on [clojars](https://clojars.org/com.nopolabs/clozxing).
 
-`[com.nopolabs/clozxing "0.1.0"]`
+`[com.nopolabs/clozxing "0.1.1"]`
 
 ## Usage
 
