@@ -32,6 +32,42 @@ Available on [clojars](https://clojars.org/com.nopolabs/clozxing).
 
     Output format is determined from file name suffix and can be overridden in opts, e.g.: { :format "JPG" }.
 
+#### Opts
+##### :size
+The size of the desired QR code in pixels (a size x size square).
+##### :error-correction
+[ErrorCorrectionLevel](https://github.com/zxing/zxing/blob/master/core/src/main/java/com/google/zxing/qrcode/decoder/ErrorCorrectionLevel.java)
+  - encode/error-correction-H 30%
+  - encode/error-correction-Q 25%
+  - encode/error-correction-M 15%
+  - encode/error-correction-H 7%
+##### :character-set
+  - encode/utf-8
+  - encode/iso-8859-1
+##### :margin
+Margin (in pixels) around generated QR code.
+##### :format
+Output image format (JPEG, PNG, GIF, BMP or WBMP)
+##### :logo
+
+##### :logo-size
+This is a hint for the desired logo size. Logo overlays are possible
+because of QR code error correction. Encoder will try overlaying 
+progressively smaller logos in the center of the QR code image until
+it finds a combination that can be successfully decoded. 
+##### defaults
+Defaults are defined in `encode/default-opts`
+
+There are no defaults for `:logo` and `:logo-size`
+```
+(def default-opts
+  {:size 300
+   :error-correction error-correction-H
+   :character-set iso-8859-1
+   :margin 1
+   :format "PNG"})
+```
+
 #### Example
 ```
 (encode/to-file 

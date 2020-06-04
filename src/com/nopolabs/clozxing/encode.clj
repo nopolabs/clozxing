@@ -29,7 +29,13 @@
 
 (def source-over (AlphaComposite/getInstance AlphaComposite/SRC_OVER (float 1)))
 
-(def default-format "PNG")
+(def default-opts
+  {:size 300
+   :error-correction error-correction-H
+   :character-set iso-8859-1
+   :margin 1
+   :logo nil
+   :format "PNG"})
 
 (defn- bit-matrix-to-image
   [bit-matrix]
@@ -97,38 +103,44 @@
         resized (.size thumbnails size size)]
     (.asBufferedImage resized)))
 
+(defn- overlay-qrcode-image
+  [base-image logo-image logo-size]
+  (if (<= logo-size 0)
+    ; no room for the logo
+    base-image
+    ; try overlaying logo with logo-size
+    (let [overlay-image (resize-image logo-image logo-size)
+          candidate-image (overlay base-image overlay-image)
+          decoded (decode/from-image candidate-image)]
+      (if (empty? decoded)
+        ; if we can't recover text from candidate-image then recurse with a smaller logo-size
+        (overlay-qrcode-image base-image logo-image (- logo-size 10))
+        ; we found a logo size that works
+        candidate-image))))
+
 (defn- qrcode-image
   ([text size hints]
    (text-to-qr-image text size hints))
   ([text size hints logo logo-size]
-   (if (<= logo-size 0)
-     ; no room for the logo
-     (qrcode-image text size hints)
-     (let [base-image (qrcode-image text size hints)
-           overlay-image (resize-image (read-image logo) logo-size)
-           image (overlay base-image overlay-image)
-           decoded (decode/from-image image)]
-       (if (empty? decoded)
-         ; if we can't recover text from qrcode then retry with a smaller logo
-         (qrcode-image text size hints logo (- logo-size 10))
-         ; we found a logo size that works
-         image)))))
+   (let [base-image (text-to-qr-image text size hints)
+         logo-image (read-image logo)]
+     (overlay-qrcode-image base-image logo-image logo-size))))
 
 (defn- max-logo-size
   [size logo-size]
   (let [max (int (/ size 3))
-        logo-size (or logo-size 75)]
+        logo-size (or logo-size max)]
     (if (< logo-size max)
       logo-size
       max)))
 
 (defn- qrcode
   [text {:keys [size logo logo-size error-correction character-set margin]}]
-  (let [size (or size 300)
+  (let [size (or size (:size default-opts))
         logo-size (max-logo-size size logo-size)
-        hints {EncodeHintType/ERROR_CORRECTION (or error-correction error-correction-H)
-               EncodeHintType/CHARACTER_SET (or character-set iso-8859-1)
-               EncodeHintType/MARGIN (or margin 1)}]
+        hints {EncodeHintType/ERROR_CORRECTION (or error-correction (:error-correction default-opts))
+               EncodeHintType/CHARACTER_SET (or character-set (:character-set default-opts))
+               EncodeHintType/MARGIN (or margin (:margin default-opts))}]
     (if (nil? logo) (qrcode-image text size hints)
                     (qrcode-image text size hints logo logo-size))))
 
@@ -149,13 +161,13 @@
   (let [file (if (instance? File file) file (new File file))
         format (or format (file-format file))
         format (valid-format format)
-        format (or format default-format)
+        format (or format (:format default-opts))
         stream (new FileOutputStream file)]
     (ImageIO/write ^BufferedImage image ^String format stream)))
 
 (defn- write-image-to-stream
   [image stream { format :format }]
-  (let [format (or format default-format)]
+  (let [format (or format (:format default-opts))]
     (ImageIO/write ^BufferedImage image ^String format ^OutputStream stream)
     stream))
 
