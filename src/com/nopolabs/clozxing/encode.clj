@@ -22,10 +22,16 @@
 (def error-correction-Q ErrorCorrectionLevel/Q)
 (def error-correction-M ErrorCorrectionLevel/M)
 (def error-correction-L ErrorCorrectionLevel/L)
+(def safe-error-correction-set #{error-correction-H
+                                 error-correction-Q
+                                 error-correction-M
+                                 error-correction-L})
 
 ; character set UTF-8 ISO-8859-1
 (def utf-8 StandardCharsets/UTF_8)
 (def iso-8859-1 StandardCharsets/ISO_8859_1)
+(def safe-character-set-set #{utf-8
+                              iso-8859-1})
 
 (def source-over (AlphaComposite/getInstance AlphaComposite/SRC_OVER (float 1)))
 
@@ -126,23 +132,60 @@
          logo-image (read-image logo)]
      (overlay-qrcode-image base-image logo-image logo-size))))
 
-(defn- max-logo-size
+(defn- safe-logo-size
   [size logo-size]
-  (let [max (int (/ size 3))
-        logo-size (or logo-size max)]
-    (if (< logo-size max)
-      logo-size
-      max)))
+  (if-not (nil? logo-size)
+    (let [max (int (/ size 3))
+          logo-size (or logo-size max)]
+      (if (< max logo-size) max
+        (if (< 0 logo-size) logo-size 0)))))
+
+(defn- safe-size
+  [size]
+  (if (nil? size)
+    (:size default-opts)
+    (if (> 100 size) 100
+      (if (< 1000 size) 1000
+        size))))
+
+(defn- safe-error-correction
+  [error-correction]
+  (if (contains? safe-error-correction-set error-correction)
+    error-correction
+    (:error-correction default-opts)))
+
+(defn- safe-character-set
+  [character-set]
+  (if (contains? safe-character-set-set character-set)
+    character-set
+    (:character-set default-opts)))
+
+(defn- safe-margin
+  [margin]
+  (if (nil? margin)
+    (:margin default-opts)
+    (if (> 0 margin) 0
+      (if (< 20 margin) 20
+        margin))))
+
+(defn- safe-opts
+  [{:keys [size logo logo-size error-correction character-set margin]}]
+  (let [opts {:size (safe-size size)
+              :logo logo
+              :logo-size (safe-logo-size size logo-size)
+              :error-correction (safe-error-correction error-correction)
+              :character-set (safe-character-set character-set)
+              :margin (safe-margin margin)}]
+    (into {} (filter (comp some? val) opts))))
 
 (defn- qrcode
-  [text {:keys [size logo logo-size error-correction character-set margin]}]
-  (let [size (or size (:size default-opts))
-        logo-size (max-logo-size size logo-size)
-        hints {EncodeHintType/ERROR_CORRECTION (or error-correction (:error-correction default-opts))
-               EncodeHintType/CHARACTER_SET (or character-set (:character-set default-opts))
-               EncodeHintType/MARGIN (or margin (:margin default-opts))}]
-    (if (nil? logo) (qrcode-image text size hints)
-                    (qrcode-image text size hints logo logo-size))))
+  [text opts]
+  (let [{:keys [size logo logo-size error-correction character-set margin]} (safe-opts opts)]
+    (let [hints {EncodeHintType/ERROR_CORRECTION error-correction
+                 EncodeHintType/CHARACTER_SET character-set
+                 EncodeHintType/MARGIN margin}]
+      (if (nil? logo) (qrcode-image text size hints)
+                      (qrcode-image text size hints logo logo-size)))))
 
 (defn- valid-format
   [format]
