@@ -132,21 +132,23 @@
          logo-image (read-image logo)]
      (overlay-qrcode-image base-image logo-image logo-size))))
 
+(defn- bounded-size
+  [size min max]
+  (if (< max size) max
+    (if (< min size) size
+      min)))
+
 (defn- safe-logo-size
   [size logo-size]
-  (if-not (nil? logo-size)
-    (let [max (int (/ size 3))
-          logo-size (or logo-size max)]
-      (if (< max logo-size) max
-        (if (< 0 logo-size) logo-size 0)))))
+  (let [max (int (/ size 3))
+        logo-size (or logo-size max)]
+    (bounded-size logo-size 0 max)))
 
 (defn- safe-size
   [size]
   (if (nil? size)
     (:size default-opts)
-    (if (> 100 size) 100
-      (if (< 1000 size) 1000
-        size))))
+    (bounded-size size 100 1000)))
 
 (defn- safe-error-correction
   [error-correction]
@@ -180,6 +182,7 @@
 
 (defn- qrcode
   [text opts]
+  (prn [text opts])
   (let [{:keys [size logo logo-size error-correction character-set margin]} (safe-opts opts)]
     (let [hints {EncodeHintType/ERROR_CORRECTION error-correction
                  EncodeHintType/CHARACTER_SET character-set
@@ -206,7 +209,8 @@
         format (valid-format format)
         format (or format (:format default-opts))
         stream (new FileOutputStream file)]
-    (ImageIO/write ^BufferedImage image ^String format stream)))
+    (ImageIO/write ^BufferedImage image ^String format stream)
+    (.getAbsolutePath file)))
 
 (defn- write-image-to-stream
   [image stream { format :format }]
@@ -216,15 +220,15 @@
 
 (defn to-image
   "Returns QR code as a java.awt.image.BufferedImage suitable for further processing"
-  ([text] (to-image text {}))
-  ([text opts] (qrcode text opts)))
+  ([text] ^BufferedImage (to-image text {}))
+  ([text opts] ^BufferedImage (qrcode text opts)))
 
 (defn to-stream
   "Writes QR code to a java.io.OutputStream"
-  ([text stream] (to-stream text stream {}))
-  ([text stream opts] (write-image-to-stream (to-image text opts) stream opts)))
+  ([text stream] ^OutputStream (to-stream text stream {}))
+  ([text stream opts] ^OutputStream (write-image-to-stream (to-image text opts) stream opts)))
 
 (defn to-file
   "Writes QR code to a file (file parameter may either be String or java.io.File)"
-  ([text file] (to-file text file {}))
-  ([text file opts] (write-image-to-file (to-image text opts) file opts)))
+  ([text file] ^String (to-file text file {}))
+  ([text file opts] ^String (write-image-to-file (to-image text opts) file opts)))
