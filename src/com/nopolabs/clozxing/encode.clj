@@ -172,7 +172,8 @@
 
 (defn- safe-opts
   [{:keys [size logo logo-size error-correction character-set margin]}]
-  (let [opts {:size (safe-size size)
+  (let [size (safe-size size)
+        opts {:size size
               :logo logo
               :logo-size (safe-logo-size size logo-size)
               :error-correction (safe-error-correction error-correction)
@@ -182,7 +183,6 @@
 
 (defn- qrcode
   [text opts]
-  (prn [text opts])
   (let [{:keys [size logo logo-size error-correction character-set margin]} (safe-opts opts)]
     (let [hints {EncodeHintType/ERROR_CORRECTION error-correction
                  EncodeHintType/CHARACTER_SET character-set
