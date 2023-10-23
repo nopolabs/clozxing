@@ -40,7 +40,7 @@ The size of the desired QR code in pixels (a size x size square).
   - encode/error-correction-H 30%
   - encode/error-correction-Q 25%
   - encode/error-correction-M 15%
-  - encode/error-correction-H 7%
+  - encode/error-correction-L 7%
 ##### :character-set
   - encode/utf-8
   - encode/iso-8859-1
